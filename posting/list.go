@@ -222,7 +222,10 @@ func getNew(key []byte, pstore *badger.KV) *List {
 
 	l.plist = postingListPool.Get().(*protos.PostingList)
 	if item.UserMeta() == bitUidPostings {
-		l.plist.Uids = val
+		if cap(l.plist.Uids) < len(val) {
+			l.plist.Uids = make([]byte, len(val))
+		}
+		copy(l.plist.Uids, val)
 	} else if val != nil {
 		x.Checkf(l.plist.Unmarshal(val), "Unable to Unmarshal PostingList from store")
 	}
